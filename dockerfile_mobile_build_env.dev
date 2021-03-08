@@ -1,0 +1,58 @@
+FROM ubuntu:18.04
+
+ARG TENSORFLOW_VERSION=r2.4
+
+# linux dependencies
+RUN apt-get update \
+ && apt-get install -y \
+	apt-utils \
+	dos2unix \
+	python3-pip \
+	gcc g++ git openssh-client less curl gnupg \
+	libxtst-dev libxext-dev libxrender-dev libfreetype6-dev \
+	libfontconfig1 libgtk2.0-0 libxslt1.1 libxxf86vm1 \
+	unzip \
+	zip \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+ 
+
+# python dependencies
+RUN pip3 --no-cache-dir install --ignore-installed --upgrade ipython && \
+	pip3 install --upgrade pip && \
+	pip3 --no-cache-dir install \
+		Cython \
+		flask \
+		flask-BasicAuth \
+		flask-HTTPAuth \
+		future \
+		ipywidgets \
+		ipykernel \
+		jupyter \
+		keras \
+		matplotlib \
+		mock \
+		numpy \
+		tensorflow \
+		pandas \
+		scikit-learn \
+		&& \
+	python3 -m ipykernel.kernelspec		
+	
+
+# get and install bazel
+RUN curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel.gpg && \
+	mv bazel.gpg /etc/apt/trusted.gpg.d/ && \
+	echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list && \
+	apt update && apt install bazel
+	
+# Get and build tensorflow
+RUN git clone https://github.com/tensorflow/tensorflow.git && \
+	cd tensorflow && \
+	git checkout $TENSORFLOW_VERSION
+	
+# 
+RUN ./configure
+
+RUN mkdir /usr/src/app/
+WORKDIR /usr/src/app/

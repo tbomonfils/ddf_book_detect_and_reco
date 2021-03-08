@@ -1,0 +1,16 @@
+Metadata-Version: 2.1
+Name: fnac
+Version: 0.0.1
+Summary: UNKNOWN
+Home-page: UNKNOWN
+Author: Thibaud LE GALL
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: 
+Classifier: 
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.0, <4
+Provides-Extra: dev
+Provides-Extra: test

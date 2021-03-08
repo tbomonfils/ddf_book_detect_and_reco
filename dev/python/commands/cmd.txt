@@ -1,0 +1,3 @@
+fnac data_augmentation_pipeline --cover_input_path=../../data/input/book_covers/ \
+--background_input_path=../../data/input/shops_atmosphere/ \
+--augmented_image_dir=../../data/output/tests/augmented_covers/

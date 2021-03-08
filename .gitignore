@@ -1,0 +1,13 @@
+# Ignoring massive datasets
+
+data/input/*
+data/output/*
+data/model/*
+
+# Ignoring outside repositiries and code snipet that inspired development
+
+inspiration/*
+
+# Extra packages for cloud and mobile
+
+build/
