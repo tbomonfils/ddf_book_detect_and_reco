@@ -1,13 +1,10 @@
-import os
+import sys
 import argparse
 
-import numpy as np
 import tensorflow as tf
-import random
-
-import PIL.Image as Image
 
 from dev.python.Yolo import model_architecture as m_a
+from dev.python.Yolo import train as t
 
 
 def parse_args(args):
@@ -16,7 +13,7 @@ def parse_args(args):
     parser.add_argument('--output-model-dir', default='./output_model')
     #training
     parser.add_argument('--epochs', default=300, type=int)
-    parser.add_argument('--batch_size', default=64, type=int)
+    parser.add_argument('--batch_size', default=4, type=int)
     parser.add_argument('--start-eval-epoch', default=10, type=int)
     parser.add_argument('--eval-epoch-interval', default=1)
     #model
@@ -97,107 +94,7 @@ def parse_args(args):
 
     return parser.parse_args(args)
 	
-def main(args):
-
-	model = m_a.Yolov4_tiny(args, training=True)
-	train_model(model, tf.keras.losses.BinaryCrossentropy(), nb_epoch=20, batch_size=args.batch_size)
-
-	
-def loss(model, x, y, training):
-    l = tf.keras.losses.BinaryCrossentropy()
-    # training=training is needed only if there are layers with different
-    # behavior during training versus inference (e.g. Dropout).
-    y_ = model(x, training=training)
-
-    return l(y_true=y, y_pred=y_)
-	
-def grad(model, inputs, targets, training):
-    with tf.GradientTape() as tape:
-        loss_value = loss(model, inputs, targets, training=training)
-    return loss_value, tape.gradient(loss_value, model.trainable_variables)
-	
-def split_train_test_index(index_size, breakdown_ratio=0.8):
-	index_split = int((index_size*breakdown_ratio//64+1)*64)
-
-	index_array = np.array([i for i in range(index_size)])
-	random.shuffle(index_array)
-	
-	index_train, index_test = index_array[:index_split], index_array[index_split:]
-	
-	return index_train, index_test
-	
-#def gen_img_batch_generator(file_dir_input):
-#	file_list = os.listdir(file_dir)
-#	nb_obs = len(file_list)
-#	
-#	index_batch_train, index_batch_test = split_train_test_index(nb_obs)
-#	img_batch_index = index_batch_train.shape[0]
-#	
-#	img_batch = []
-#	label_batch = []
-#			
-#	for index in img_batch_train:
-#		for i in index:
-#			filename = file_list[i]
-#			img_batch.append(np.array(Image.open(file_dir+filename)))
-#			
-#			points = np.array(filename.split('.')[0].split('_')[-8:]).reshape((4, 2)).astype(np.int)
-#			label_batch.append(np.concatenate((np.concatenate(np.array(list(zip(points[:,0]/img_array.shape[0], \
-#			points[:,1]/img_array.shape[1])))), np.array([1]))))
-#	
-#	return (file_list[] for index in img_batch_train)
-
-def train_model(model, loss, nb_epoch=100, batch_size=64, input_dir='data/output/tests/augmented_covers/', output_dir='data/model/', breakdown_ratio=0.8):
-	
-	optimizer = tf.keras.optimizers.SGD(learning_rate=0.01)
-	
-	file_list = os.listdir(input_dir)
-	nb_obs = len(file_list)
-	
-	index_train, index_test = split_train_test_index(nb_obs)
-
-	test_index_split = index_test.shape[0]//batch_size
-	index_batch_test = index_test[:test_index_split*batch_size].reshape((test_index_split, batch_size))
-	
-	for epoch in range(nb_epoch):
-		epoch_loss_avg = tf.keras.metrics.Mean()
-		epoch_accuracy = tf.keras.metrics.BinaryCrossentropy()
-
-
-		random.shuffle(index_train)
-		index_batch_train = index_train.reshape((index_train.shape[0]//batch_size, batch_size))
-		
-		for i, index_batch in enumerate(index_batch_train):
-			print(epoch, i)
-			img_batch = []
-			label_batch = []
-			for index in index_batch:
-				filename = file_list[index]
-				img_batch.append(np.array(Image.open(input_dir+filename)))
-
-				points = np.array(filename.split('.')[0].split('_')[-8:]).reshape((4, 2)).astype(np.int)
-				label_batch.append(np.concatenate((np.concatenate(np.array(list(zip(points[:,0]/img_batch[-1].shape[-3], points[:,1]/img_batch[-1].shape[-2])))), np.array([1]))))
-
-			img_batch_array = np.stack(img_batch)
-			label_batch_array = np.stack(label_batch)
-
-			loss_value, grads = grad(model, img_batch_array, label_batch_array, training=True)
-
-			optimizer.apply_gradients(zip(grads, model.trainable_variables))
-			
-			epoch_loss_avg.update_state(loss_value)
-			
-			
-			epoch_accuracy.update_state(label_batch_array, model(img_batch_array))
-			
-		# Add eval
-		
-		if (epoch+1)%10==0:
-			model.save('data/model/'+'TinyYolo_%s'%epoch)
-			print("Epoch {:03d}: Loss: {:.3f}, Accuracy: {:.3%}".format(epoch,
-                                                                epoch_loss_avg.result(),
-                                                                epoch_accuracy.result()))
-																
 if __name__ == "__main__":
-    args = parse_args(sys.argv[1:])
-    main(args)
+	args = args = parse_args(sys.argv[1:])
+	model = m_a.Yolov4_tiny(args, training=True)
+	t.train_model(model, tf.keras.losses.BinaryCrossentropy(), nb_epoch=20, batch_size=args.batch_size)

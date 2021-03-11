@@ -8,6 +8,7 @@ data/model/*
 
 inspiration/*
 
-# Extra packages for cloud and mobile
+# Extra packages for cloud and mobile, and keys/credentials
 
 build/
+ressources/

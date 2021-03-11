@@ -199,3 +199,49 @@ def read_augmented_img_filename(file_path):
 	img = PIL.Image.open(augmented_img_output_path)
 	points = np.array(file_path.split('/')[-1].split('.')[0].split('_')[-8:]).reshape((4, 2)).astype(np.int)
 	return img, points
+	
+def end_to_end_transformation(cover_img, background_img, output_size=(512, 512)):
+	background_img = background_img.resize(output_size)
+	rotation = (random.uniform(0, 45), random.uniform(0, 45), random.uniform(0, 45))
+	
+	resized_cover_img = scale_cover_image(cover_img, background_img)
+	cover_img_corners = get_image_corners(resized_cover_img)
+	
+	M = transform(resized_cover_img,
+			  translation=(0, 0, 0),
+			  rotation=rotation,
+			  scaling=(1, 1, 1),
+			  shearing=(0, 0, 0))
+	proj_cover_img_corners = np.array([project_point(point, M) for point in cover_img_corners])
+	
+	translation = find_translation(proj_cover_img_corners)
+	
+	j=0
+	while (proj_cover_img_corners<0).any():
+		translation += j*10
+		M = transform(resized_cover_img,
+					  translation=(translation[0], translation[1], 0),
+					  rotation=rotation,
+					  scaling=(1, 1, 1),
+					  shearing=(0, 0, 0))
+		proj_cover_img_corners = np.array([project_point(point, M) for point in cover_img_corners])
+		j+=1
+	
+	warped_cover_img_size = find_output_size(proj_cover_img_corners, translation)
+	warped_cover_img = cv2.warpPerspective(resized_cover_img, M, tuple(warped_cover_img_size))
+	
+	warped_cover_img_mask = create_img_mask(warped_cover_img)
+	
+	center_background_img = (np.array(background_img.size)/2).astype(np.int)
+	
+	position_cover_img_in_background = define_position_of_cover_in_background(proj_cover_img_corners[-1],
+	background_img)
+	
+	background_img.paste(Image.fromarray(warped_cover_img[:, :, ::-1]),
+	position_cover_img_in_background,
+	Image.fromarray(warped_cover_img_mask))
+	augmented_img = background_img.copy()
+	
+	augmented_img_array = post_composition_augmentation(np.array(augmented_img))
+	
+	return augmented_img_array, proj_cover_img_corners[:-1]+position_cover_img_in_background
