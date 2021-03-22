@@ -83,7 +83,7 @@ def train_model(model, loss, nb_epoch=100, batch_size=64, epoch_target='full', i
 			filenames = [file_list[index] for index in index_filename]
 			img_batch_array, label_batch_array = batch_img_gen(filenames, input_dir)
 
-			loss_value, grads = grad(model, img_batch_array, label_batch_array, training=True)
+			loss_value, grads = grad(model, img_batch_array/255, label_batch_array/512, training=True)
 
 			optimizer.apply_gradients(zip(grads, model.trainable_variables))
 			
