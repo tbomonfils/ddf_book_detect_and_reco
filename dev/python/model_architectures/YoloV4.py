@@ -42,44 +42,40 @@ def backbone(x):
 #    x1 = tf.keras.layers.Dense(512, activation=tf.keras.activations.relu)(x1)
 #    x1 = tf.keras.layers.Dense(8, activation=None)(x1)
 	
-    x = conv2d_bn_leaky(output1, output1.shape[-1] // 2, (1, 1), strides=(1, 1), padding='same',name="block_5_7")
-    x = tf.keras.layers.UpSampling2D(size=(2, 2))(x)
-    output2 = tf.keras.layers.Concatenate()([x, x1])
+#    x = conv2d_bn_leaky(output1, output1.shape[-1] // 2, (1, 1), strides=(1, 1), padding='same',name="block_5_7")
+#    x = tf.keras.layers.UpSampling2D(size=(2, 2))(x)
+#    output2 = tf.keras.layers.Concatenate()([x, x1])
 
-    return [output2, output1]
+    return output1
 
-def last_conv_layer(inputs, args):
-    output_layers = []
-    head_conv_filters = [256, 512]
-
-    for index, x in enumerate(inputs):
-
-        x = conv2d_bn_leaky(x, head_conv_filters[index], (3, 3), name='yolov3_head_%d_1' % (index+1))
-        x = tf.keras.layers.Conv2D(x.shape[-1]//4, (1, 1), use_bias=True,
-        name='yolov3_head_%d_2_conv2d' % (index+1))(x)
+#def last_conv_layer(inputs, args):
+#    output_layers = []
+#    head_conv_filters = [256, 512]
+#
+#    for index, x in enumerate(inputs):
+#
+#        x = conv2d_bn_leaky(x, head_conv_filters[index], (3, 3), name='yolov3_head_%d_1' % (index+1))
+#        x = tf.keras.layers.Conv2D(x.shape[-1]//4, (1, 1), use_bias=True,
+#        name='yolov3_head_%d_2_conv2d' % (index+1))(x)
 								   
-        output_layers.append(x)
+#        output_layers.append(x)
 		
-    return output_layers
+#    return output_layers
 	
-def head(outputs, args, training):
-	if training==True:
-		x1 = tf.reshape(outputs[0], [args.batch_size, 65536])
-		x2 = tf.reshape(outputs[1], [args.batch_size, 32768])
-	else:
-		x1 = tf.reshape(outputs[0], [1, 43264])
-		x2 = tf.reshape(outputs[1], [1, 21632])
+def head(x):
+	x1 = tf.reshape(x, [-1, 16*16*256])
+#		x2 = tf.reshape(outputs[1], [1, 21632])
 	x1 = tf.keras.layers.Dense(512, activation=tf.keras.activations.relu)(x1)
-	x2 = tf.keras.layers.Dense(512, activation=tf.keras.activations.relu)(x2)
+#	x2 = tf.keras.layers.Dense(512, activation=tf.keras.activations.relu)(x2)
 	x1 = tf.keras.layers.Dense(9, activation=tf.keras.activations.sigmoid)(x1)
-	x2 = tf.keras.layers.Dense(9, activation=tf.keras.activations.sigmoid)(x2)
-	return x1, x2
+#	x2 = tf.keras.layers.Dense(9, activation=tf.keras.activations.sigmoid)(x2)
+	return x1
 
-def Yolov4_tiny(args, training=True):
+def Yolov4_tiny(args):
     input = tf.keras.layers.Input((None, None, 3))
     outputs = backbone(input)
-    outputs = last_conv_layer(outputs,args)
-    outputs = head(outputs, args, training)
+#    outputs = last_conv_layer(outputs,args)
+    outputs = head(outputs)
 
     model = tf.keras.Model(inputs=input, outputs=outputs)
     return model

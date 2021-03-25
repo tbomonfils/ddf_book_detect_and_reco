@@ -9,19 +9,19 @@ import random
 import PIL.Image as Image
 
 	
-def loss(model, x, y, training):
-    l = tf.keras.losses.BinaryCrossentropy()
+#def loss(model, l, x, y, training):
     # training=training is needed only if there are layers with different
     # behavior during training versus inference (e.g. Dropout).
-    y_ = model(x, training=training)
+#    y_ = model(x, training=training)
 
-    return l(y_true=y, y_pred=y_)
+#    return l(y_true=y, y_pred=y_)
 
 
-def grad(model, inputs, targets, training):
-    with tf.GradientTape() as tape:
-        loss_value = loss(model, inputs, targets, training=training)
-    return loss_value, tape.gradient(loss_value, model.trainable_variables)
+def grad(model, loss, inputs, targets, training):
+	with tf.GradientTape() as tape:
+		y_ = model(inputs, training=training)
+		loss_value = loss(y_true=targets, y_pred=y_)
+	return loss_value, tape.gradient(loss_value, model.trainable_variables)
 
 	
 def split_train_test_index(index_size, breakdown_ratio=0.8):
@@ -83,7 +83,7 @@ def train_model(model, loss, nb_epoch=100, batch_size=64, epoch_target='full', i
 			filenames = [file_list[index] for index in index_filename]
 			img_batch_array, label_batch_array = batch_img_gen(filenames, input_dir)
 
-			loss_value, grads = grad(model, img_batch_array/255, label_batch_array/512, training=True)
+			loss_value, grads = grad(model, loss, img_batch_array/255, label_batch_array, training=True)
 
 			optimizer.apply_gradients(zip(grads, model.trainable_variables))
 			

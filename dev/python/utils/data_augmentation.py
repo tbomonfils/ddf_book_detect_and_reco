@@ -1,4 +1,6 @@
 import cv2
+import PIL
+
 import imgaug as ia
 import imgaug.augmenters as iaa
 import numpy as np
@@ -196,7 +198,7 @@ def generate_file_path_name(filename_start, projected_points_coord, i,extension=
 	return filename+extension
 	
 def read_augmented_img_filename(file_path):
-	img = PIL.Image.open(augmented_img_output_path)
+	img = PIL.Image.open(file_path)
 	points = np.array(file_path.split('/')[-1].split('.')[0].split('_')[-8:]).reshape((4, 2)).astype(np.int)
 	return img, points
 	

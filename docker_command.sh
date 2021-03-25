@@ -5,7 +5,7 @@ docker run -it \
 	-p 8888:8888 -p 5000:5000 -p 6006:6006 --rm \
 	-v //c/Users/Thibaud/Desktop/D2F/ddf_book_detect_and_reco:/home/app/ \
 	-e DISPLAY=192.168.99.1:0 -v /tmp/.X11-unix:/tmp/.X11-unix \
-	ddf_book_detect_and_reco:dev \
+	ddf_video_comp:2.4_dev \
 	jupyter notebook --ip=0.0.0.0 --allow-root &
 	
 #Docker noPillow
