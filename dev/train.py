@@ -3,8 +3,8 @@ import argparse
 
 import tensorflow as tf
 
-from dev.python.Yolo import model_architecture as m_a
-from dev.python.Yolo import train
+from dev.python.model_architectures import YoloV4 as m_a
+from dev.python.training import train_model
 
 
 def parse_args(args):

@@ -49,9 +49,8 @@ def batch_img_gen(filenames, file_dir_input):
 	
 	return img_batch_array, label_batch_array
 
-def train_model(model, loss, nb_epoch=100, batch_size=64, epoch_target='full', input_dir='data/output/tests/augmented_covers/', output_dir='data/model/', breakdown_ratio=0.8):
-	
-	optimizer = tf.keras.optimizers.SGD(learning_rate=0.01)
+def train_model(model, loss, nb_epoch=100, batch_size=64, optimizer=tf.keras.optimizers.SGD(learning_rate=0.01),\
+	epoch_target='full', input_dir='data/output/tests/augmented_covers/', output_dir='data/model/', breakdown_ratio=0.8):
 	
 	file_list = os.listdir(input_dir)
 	nb_obs = len(file_list)

@@ -3,8 +3,6 @@
 
 FROM debian:buster-slim AS slim-os
 
-ARG TENSORFLOW_VERSION=2.3.1
-
 # Install runtime dependencies
 RUN apt-get update \
  && apt-get install -yq --no-install-recommends \
