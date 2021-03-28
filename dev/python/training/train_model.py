@@ -34,7 +34,7 @@ def split_train_test_index(index_size, breakdown_ratio=0.8):
 	
 	return index_train, index_test
 	
-def batch_img_gen(filenames, file_dir_input):
+def batch_img_gen(filenames, file_dir_input, scale=True):
 	img_batch = []
 	label_batch = []
 	
@@ -42,7 +42,10 @@ def batch_img_gen(filenames, file_dir_input):
 		img_batch.append(np.array(Image.open(file_dir_input+f)))
 
 		points = np.array(f.split('.')[0].split('_')[-8:]).reshape((4, 2)).astype(np.int)
-		label_batch.append(np.concatenate((np.concatenate(np.array(list(zip(points[:,0]/img_batch[-1].shape[-3], points[:,1]/img_batch[-1].shape[-2])))), np.array([1]))))
+		if scale==True:
+			label_batch.append(np.concatenate((np.concatenate(np.array(list(zip(points[:,0]/img_batch[-1].shape[-3], points[:,1]/img_batch[-1].shape[-2])))), np.array([1]))))
+		else:
+			label_batch.append(np.concatenate((points.reshape(8), np.array([1]))))
 	
 	img_batch_array = np.stack(img_batch)
 	label_batch_array = np.stack(label_batch)
@@ -50,7 +53,7 @@ def batch_img_gen(filenames, file_dir_input):
 	return img_batch_array, label_batch_array
 
 def train_model(model, loss, nb_epoch=100, batch_size=64, optimizer=tf.keras.optimizers.SGD(learning_rate=0.01),\
-	epoch_target='full', input_dir='data/output/tests/augmented_covers/', output_dir='data/model/', breakdown_ratio=0.8):
+	epoch_target='full', input_dir='data/output/tests/augmented_covers/', output_dir='data/model/', breakdown_ratio=0.8, scale_batch_label=True):
 	
 	file_list = os.listdir(input_dir)
 	nb_obs = len(file_list)
@@ -80,7 +83,7 @@ def train_model(model, loss, nb_epoch=100, batch_size=64, optimizer=tf.keras.opt
 		for i, index_filename in enumerate(filenames_index_gen):
 
 			filenames = [file_list[index] for index in index_filename]
-			img_batch_array, label_batch_array = batch_img_gen(filenames, input_dir)
+			img_batch_array, label_batch_array = batch_img_gen(filenames, input_dir, scale=scale_batch_label)
 
 			loss_value, grads = grad(model, loss, img_batch_array/255, label_batch_array, training=True)
 
@@ -88,7 +91,7 @@ def train_model(model, loss, nb_epoch=100, batch_size=64, optimizer=tf.keras.opt
 			
 			epoch_loss_avg.update_state(loss_value)
 			
-			epoch_accuracy.update_state(label_batch_array, model(img_batch_array))
+#			epoch_accuracy.update_state(label_batch_array, model(img_batch_array))
 			
 		# Add eval
 		

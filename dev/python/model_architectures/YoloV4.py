@@ -71,11 +71,11 @@ def head(x):
 #	x2 = tf.keras.layers.Dense(9, activation=tf.keras.activations.sigmoid)(x2)
 	return x1
 
-def Yolov4_tiny(args):
+def Yolov4_tiny(args, training=training):
     input = tf.keras.layers.Input((None, None, 3))
     outputs = backbone(input)
 #    outputs = last_conv_layer(outputs,args)
     outputs = head(outputs)
 
-    model = tf.keras.Model(inputs=input, outputs=outputs)
+    model = tf.keras.Model(inputs=input, outputs=outputs, training=training)
     return model
