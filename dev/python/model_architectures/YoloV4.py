@@ -62,20 +62,36 @@ def backbone(x):
 		
 #    return output_layers
 	
-def head(x):
+def head_2layers(x):
 	x1 = tf.reshape(x, [-1, 16*16*256])
-#		x2 = tf.reshape(outputs[1], [1, 21632])
+#	x2 = tf.reshape(outputs[1], [1, 21632])
+
 	x1 = tf.keras.layers.Dense(512, activation=tf.keras.activations.relu)(x1)
 #	x2 = tf.keras.layers.Dense(512, activation=tf.keras.activations.relu)(x2)
 	x1 = tf.keras.layers.Dense(9, activation=tf.keras.activations.sigmoid)(x1)
 #	x2 = tf.keras.layers.Dense(9, activation=tf.keras.activations.sigmoid)(x2)
 	return x1
+	
+def head_5layers(x):
+	x1 = tf.reshape(x, [-1, 16*16*256])
+#	x2 = tf.reshape(outputs[1], [1, 21632])
+	x1 = tf.keras.layers.Dense(4*16*256, activation=tf.keras.activations.relu)(x1)
+	x1 = tf.keras.layers.Dense(16*256, activation=tf.keras.activations.relu)(x1)
+	x1 = tf.keras.layers.Dense(4*256, activation=tf.keras.activations.relu)(x1)
+	x1 = tf.keras.layers.Dense(256, activation=tf.keras.activations.relu)(x1)
+#	x2 = tf.keras.layers.Dense(512, activation=tf.keras.activations.relu)(x2)
+	x1 = tf.keras.layers.Dense(9, activation=tf.keras.activations.sigmoid)(x1)
+#	x2 = tf.keras.layers.Dense(9, activation=tf.keras.activations.sigmoid)(x2)
+	return x1
 
-def Yolov4_tiny(args, training=training):
-    input = tf.keras.layers.Input((None, None, 3))
-    outputs = backbone(input)
+def Yolov4_tiny(args):
+	input = tf.keras.layers.Input((None, None, 3))
+	outputs = backbone(input)
 #    outputs = last_conv_layer(outputs,args)
-    outputs = head(outputs)
+	if args.head_type=='2l':
+		outputs = head_2layers(outputs)
+	if args.head_type=='5l':
+		outputs = head_5layers(outputs)
 
-    model = tf.keras.Model(inputs=input, outputs=outputs, training=training)
-    return model
+	model = tf.keras.Model(inputs=input, outputs=outputs)
+	return model

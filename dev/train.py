@@ -17,6 +17,7 @@ def parse_args(args):
 	parser.add_argument('--start-eval-epoch', default=10, type=int)
 	parser.add_argument('--eval-epoch-interval', default=1)
 	parser.add_argument('--epoch_target', default='full')
+	parser.add_argument('--head_type', default='2l')
 
 	return parser.parse_args(args)
 	
