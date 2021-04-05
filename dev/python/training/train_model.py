@@ -17,10 +17,11 @@ import PIL.Image as Image
 #    return l(y_true=y, y_pred=y_)
 
 
-def grad(model, loss, inputs, targets, training):
+def grad(model, loss, inputs, targets, weight_decay, training):
 	with tf.GradientTape() as tape:
 		y_ = model(inputs, training=training)
 		loss_value = loss(y_true=targets, y_pred=y_)
+		loss_value = loss_value + weight_decay*tf.add_n([tf.nn.l2_loss(v) for v in model.trainable_variables if 'batch_normalization' not in v.name])
 	return loss_value, tape.gradient(loss_value, model.trainable_variables)
 
 	
@@ -43,7 +44,8 @@ def batch_img_gen(filenames, file_dir_input, scale=True):
 
 		points = np.array(f.split('.')[0].split('_')[-8:]).reshape((4, 2)).astype(np.int)
 		if scale==True:
-			label_batch.append(np.concatenate((np.concatenate(np.array(list(zip(points[:,0]/img_batch[-1].shape[-3], points[:,1]/img_batch[-1].shape[-2])))), np.array([1]))))
+			label_batch.append(np.concatenate((np.concatenate(np.array(list(zip(points[:,0]/img_batch[-1].shape[-3], \
+																points[:,1]/img_batch[-1].shape[-2])))), np.array([1]))))
 		else:
 			label_batch.append(np.concatenate((points.reshape(8), np.array([1]))))
 	
@@ -52,7 +54,7 @@ def batch_img_gen(filenames, file_dir_input, scale=True):
 	
 	return img_batch_array, label_batch_array
 
-def train_model(model, loss, nb_epoch=100, batch_size=64, optimizer=tf.keras.optimizers.SGD(learning_rate=0.01, clipvalue=0.5),\
+def train_model(model, loss, nb_epoch=100, batch_size=64, optimizer=tf.keras.optimizers.SGD(learning_rate=0.01, clipvalue=0.5), weight_decay=5e-4, \
 	epoch_target='full', input_dir='data/output/tests/augmented_covers/', output_dir='data/model/', breakdown_ratio=0.8, scale_batch_label=True):
 	
 	file_list = os.listdir(input_dir)
@@ -85,7 +87,7 @@ def train_model(model, loss, nb_epoch=100, batch_size=64, optimizer=tf.keras.opt
 			filenames = [file_list[index] for index in index_filename]
 			img_batch_array, label_batch_array = batch_img_gen(filenames, input_dir, scale=scale_batch_label)
 
-			loss_value, grads = grad(model, loss, img_batch_array/255, label_batch_array, training=True)
+			loss_value, grads = grad(model, loss, img_batch_array/255, label_batch_array, weight_decay, training=True)
 
 			optimizer.apply_gradients(zip(grads, model.trainable_variables))
 			
