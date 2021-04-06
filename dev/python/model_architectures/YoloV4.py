@@ -56,7 +56,7 @@ def head_2layers(x, args):
 	x = tf.keras.layers.Dense(512, activation=tf.keras.activations.relu)(x)
 	if args.head_type=='2l':
 		x = tf.keras.layers.Dense(9, activation=None)(x)
-	else args.head_type=='2l_s':
+	if args.head_type=='2l_s':
 		x = tf.keras.layers.Dense(9, activation=tf.keras.activations.sigmoid)(x)
 	return x
 	
@@ -73,9 +73,9 @@ def Yolov4_tiny(args):
 	input = tf.keras.layers.Input((None, None, 3))
 	outputs = backbone(input)
 #    outputs = last_conv_layer(outputs,args)
-	if args.head_type=='2l_s':
+	if '2l' in args.head_type:
 		outputs = head_2layers(outputs[0], args)
-	if args.head_type=='5l_s':
+	if '5l_s' in args.head_type:
 		outputs = head_5layers(outputs[0], args)
 
 	model = tf.keras.Model(inputs=input, outputs=outputs)
