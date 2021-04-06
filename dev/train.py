@@ -3,7 +3,7 @@ import argparse
 
 import tensorflow as tf
 
-from dev.python.model_architectures import yoloV4 as m_a
+from dev.python.model_architectures import yoloV4
 from dev.python.training import train_model
 
 
@@ -24,7 +24,7 @@ def parse_args(args):
 	return parser.parse_args(args)
 	
 def main(args):
-	model = m_a.Yolov4_tiny(args, training=True)
+	model = yolov4_tiny(args, training=True)
 	train.train_model(model, tf.keras.losses.BinaryCrossentropy(), nb_epoch=args.epochs, batch_size=args.batch_size)
 	
 if __name__ == "__main__":
