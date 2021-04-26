@@ -55,7 +55,9 @@ def head_2layers(x, args):
 	x = tf.reshape(x, [-1, 32*32*(int(args.head_size)*2+int(args.head_size))])
 	x = tf.keras.layers.Dense(512, activation=tf.keras.activations.relu)(x)
 	if args.head_type=='2l':
-		x = tf.keras.layers.Dense(9, activation=None)(x)
+		x_coord = tf.keras.layers.Dense(8, activation=None)(x)
+		x_detection = tf.keras.layers.Dense(1, activation=tf.keras.activations.sigmoid)(x)
+		x = tf.keras.layers.Concatenate()([x_coord, x_detection])
 	if args.head_type=='2l_s':
 		x = tf.keras.layers.Dense(9, activation=tf.keras.activations.sigmoid)(x)
 	return x

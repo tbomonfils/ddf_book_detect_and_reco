@@ -35,12 +35,16 @@ def split_train_test_index(index_size, breakdown_ratio=0.8):
 	
 	return index_train, index_test
 	
-def batch_img_gen(filenames, file_dir_input, scale=True):
+def batch_img_gen(filenames, augmented_input_dir, real_input_dir, scale=True):
 	img_batch = []
 	label_batch = []
 	
 	for f in filenames:
-		img_batch.append(np.array(Image.open(file_dir_input+f)))
+		if 0.95<random.uniform(0, 1):
+			f = os.listdir(real_input_dir)[random.randint(0, len(os.listdir(real_input_dir))-1)]
+			img_batch.append(np.array(Image.open(real_input_dir+f)))
+		else:
+			img_batch.append(np.array(Image.open(augmented_input_dir+f)))
 
 		points = np.array(f.split('.')[0].split('_')[-8:]).reshape((4, 2)).astype(np.int)
 		if scale==True:
@@ -55,9 +59,10 @@ def batch_img_gen(filenames, file_dir_input, scale=True):
 	return img_batch_array, label_batch_array
 
 def train_model(model, loss, nb_epoch=100, batch_size=64, optimizer=tf.keras.optimizers.SGD(learning_rate=0.01, clipvalue=0.5), weight_decay=5e-4, \
-	epoch_target='full', input_dir='data/output/tests/augmented_covers/', output_dir='data/model/', breakdown_ratio=0.8, scale_batch_label=True):
+	epoch_target='full', augmented_input_dir='data/output/tests/train_set/', real_input_dir='data/output/tests/annotated_images/',
+	output_dir='data/model/', breakdown_ratio=0.8, scale_batch_label=True):
 	
-	file_list = os.listdir(input_dir)
+	file_list = os.listdir(augmented_input_dir)
 	nb_obs = len(file_list)
 	
 	index_train, index_test = split_train_test_index(nb_obs, breakdown_ratio=breakdown_ratio)
@@ -85,7 +90,7 @@ def train_model(model, loss, nb_epoch=100, batch_size=64, optimizer=tf.keras.opt
 		for i, index_filename in enumerate(filenames_index_gen):
 
 			filenames = [file_list[index] for index in index_filename]
-			img_batch_array, label_batch_array = batch_img_gen(filenames, input_dir, scale=scale_batch_label)
+			img_batch_array, label_batch_array = batch_img_gen(filenames, augmented_input_dir, real_input_dir, scale=scale_batch_label)
 
 			loss_value, grads = grad(model, loss, img_batch_array/255, label_batch_array, weight_decay, training=True)
 

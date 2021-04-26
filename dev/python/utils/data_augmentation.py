@@ -127,7 +127,6 @@ def transform(image,
     return M
 	
 def get_image_corners(img, return_center=True):
-
 	img_corners = [[0, 0],
 	[img.shape[1], 0],
 	[0, img.shape[0]],
@@ -193,7 +192,7 @@ def post_composition_augmentation(image_array):
 	
 	return enhancer.enhance(random.uniform(0.3, 1))
 	
-def generate_file_path_name(filename_start, projected_points_coord, i,extension='.jpg'):
+def generate_file_path_name(filename_start, projected_points_coord, i, extension='.jpg'):
 	filename = '_'.join([filename_start, str(i)]+[str(point) for point in projected_points_coord.reshape((8))])
 	return filename+extension
 	
