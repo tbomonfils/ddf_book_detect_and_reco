@@ -9,7 +9,7 @@ from PIL import ImageEnhance
 import random
 
 
-def transform(image,
+def gen_transformation_matrix(image,
               translation=(0, 0, 0),
               rotation=(0, 0, 0),
               scaling=(1, 1, 1),
@@ -203,12 +203,12 @@ def read_augmented_img_filename(file_path):
 	
 def end_to_end_transformation(cover_img, background_img, output_size=(512, 512)):
 	background_img = background_img.resize(output_size)
-	rotation = (random.uniform(0, 45), random.uniform(0, 45), random.uniform(0, 45))
+	rotation = (random.uniform(-45, 45), random.uniform(-45, 45), random.uniform(-45, 45))
 	
 	resized_cover_img = scale_cover_image(cover_img, background_img)
 	cover_img_corners = get_image_corners(resized_cover_img)
 	
-	M = transform(resized_cover_img,
+	M = gen_transformation_matrix(resized_cover_img,
 			  translation=(0, 0, 0),
 			  rotation=rotation,
 			  scaling=(1, 1, 1),
@@ -220,7 +220,7 @@ def end_to_end_transformation(cover_img, background_img, output_size=(512, 512))
 	j=0
 	while (proj_cover_img_corners<0).any():
 		translation += j*10
-		M = transform(resized_cover_img,
+		M = gen_transformation_matrix(resized_cover_img,
 					  translation=(translation[0], translation[1], 0),
 					  rotation=rotation,
 					  scaling=(1, 1, 1),
@@ -243,6 +243,7 @@ def end_to_end_transformation(cover_img, background_img, output_size=(512, 512))
 	Image.fromarray(warped_cover_img_mask))
 	augmented_img = background_img.copy()
 	
-	augmented_img_array = post_composition_augmentation(np.array(augmented_img))
+	if 0.5<random.uniform(0,1):
+		augmented_img = post_composition_augmentation(np.array(augmented_img))
 	
-	return augmented_img_array, proj_cover_img_corners[:-1]+position_cover_img_in_background
+	return augmented_img, proj_cover_img_corners[:-1]+position_cover_img_in_background

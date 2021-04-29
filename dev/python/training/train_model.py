@@ -35,12 +35,12 @@ def split_train_test_index(index_size, breakdown_ratio=0.8):
 	
 	return index_train, index_test
 	
-def batch_img_gen(filenames, augmented_input_dir, real_input_dir, scale=True):
+def batch_img_gen(filenames, augmented_input_dir, real_input_dir, real_data_th=0.95 , scale=True):
 	img_batch = []
 	label_batch = []
 	
 	for f in filenames:
-		if 0.95<random.uniform(0, 1):
+		if real_data_th<random.uniform(0, 1):
 			f = os.listdir(real_input_dir)[random.randint(0, len(os.listdir(real_input_dir))-1)]
 			img_batch.append(np.array(Image.open(real_input_dir+f)))
 		else:
