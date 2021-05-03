@@ -35,12 +35,12 @@ def split_train_test_index(index_size, breakdown_ratio=0.8):
 	
 	return index_train, index_test
 	
-def batch_img_gen(filenames, augmented_input_dir, real_input_dir, real_data_th=0.95 , scale=True):
+def batch_img_gen(filenames, augmented_input_dir, real_input_dir, real_data_ratio=0.80 , scale=True):
 	img_batch = []
 	label_batch = []
 	
 	for f in filenames:
-		if real_data_th<random.uniform(0, 1):
+		if real_data_ratio<random.uniform(0, 1):
 			f = os.listdir(real_input_dir)[random.randint(0, len(os.listdir(real_input_dir))-1)]
 			img_batch.append(np.array(Image.open(real_input_dir+f)))
 		else:
@@ -59,7 +59,7 @@ def batch_img_gen(filenames, augmented_input_dir, real_input_dir, real_data_th=0
 	return img_batch_array, label_batch_array
 
 def train_model(model, loss, nb_epoch=100, batch_size=64, optimizer=tf.keras.optimizers.SGD(learning_rate=0.01, clipvalue=0.5), weight_decay=5e-4, \
-	epoch_target='full', augmented_input_dir='data/output/tests/train_set/', real_input_dir='data/output/tests/annotated_images/',
+	epoch_target='full', augmented_input_dir='data/output/tests/train_set/', real_input_dir='data/output/tests/annotated_images_train/',
 	output_dir='data/model/', breakdown_ratio=0.8, scale_batch_label=True):
 	
 	file_list = os.listdir(augmented_input_dir)
